@@ -1,9 +1,17 @@
-﻿using BudgetApp.Services;
+﻿using BudgetApp.Infrastructure.Context;
+using BudgetApp.Infrastructure.Repository;
+using BudgetApp.Models.Data;
+using BudgetApp.Models.Utilitis;
+using BudgetApp.Services;
 using BudgetApp.ViewModels.Base;
+using BudgetApp.ViewModels.Page;
 using BudgetApp.ViewModels.Window;
+using BudgetApp.Views.Windows;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Configuration;
 using System.Data;
+using System.Reflection;
 using System.Windows;
 
 namespace BudgetApp
@@ -19,18 +27,43 @@ namespace BudgetApp
         {
             IServiceCollection services = new ServiceCollection();
 
+            services.AddScoped<Parser>();
+
+            Type serviceType = typeof(CardOperation);
+
+            foreach(PropertyInfo prop in serviceType.GetProperties())
+            {
+                //var attrs = prop.GetCustomAttributes(true);
+                var paramNameAttribute = prop.GetCustomAttribute(typeof(PoleDescriptionAttribute)) as PoleDescriptionAttribute;
+                
+                string paramNameValue = paramNameAttribute is null ? prop.Name : paramNameAttribute.Name;
+                string propName = prop.Name;
+       
+            }
+
+            services.AddSingleton<NotifyService>();
+
             services.AddSingleton<MainWindowViewModel>();
+            services.AddSingleton<LoadDataWindowViewModel>();
+
+            services.AddSingleton<DataListViewModel>();
 
             services.AddSingleton<MainWindow>(provider => new MainWindow()
             {
                 DataContext = provider.GetRequiredService<MainWindowViewModel>()
             });
+            services.AddTransient<LoadDataWindow>(provider => new LoadDataWindow()
+            {
+                DataContext = provider.GetRequiredService<LoadDataWindowViewModel>()
+            });
 
-            /*services.AddDbContext<ApplicationContext>(opt =>
+            services.AddDbContext<ApplicationContext>(opt =>
                     opt.UseSqlite("Data Source=AppDatabase.db"));
-            */
+            services.AddSingleton<Repository>();
+            
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<Func<Type, ViewModelBase>>(servicesProvider => viewModelType => (ViewModelBase)servicesProvider.GetRequiredService(viewModelType));
+            services.AddSingleton<Func<Type, Window>>(servicesProvider => windowType => (Window)servicesProvider.GetRequiredService(windowType));
 
 
             _serviceProvider = services.BuildServiceProvider();

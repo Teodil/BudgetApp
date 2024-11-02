@@ -1,0 +1,94 @@
+﻿<Window x:Class="BudgetApp.Views.Windows.LoadDataWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BudgetApp.Views.Windows" xmlns:window="clr-namespace:BudgetApp.ViewModels.Window" 
+        d:DataContext="{d:DesignInstance Type=window:LoadDataWindowViewModel}"
+        mc:Ignorable="d"
+        Title="Загрузка данных" Height="450" Width="800">
+    <DockPanel>
+        <WrapPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="10,10,0,10">
+            <TextBox Width="400" IsEnabled="False" Text="{Binding FilePath}"></TextBox>
+            <Button Margin="10,0,0,0" Command="{Binding OpenFileCommand}">Выбрать файл</Button>
+            <StackPanel>
+                <Label>
+                    Шаблон загрузки Excel
+                </Label>
+                <ComboBox Margin="10,0,0,0" SelectedIndex="0">
+                    <ComboBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock>Т-банк (Тинькофф)</TextBlock>
+                            <Button Margin="5,0,0,0">Редактирование</Button>
+                        </StackPanel>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <StackPanel>
+                            <TextBlock>Альфа банк</TextBlock>
+                            <Button>Редактирование</Button>
+                        </StackPanel>
+                    </ComboBoxItem>
+                    <ComboBoxItem>
+                        <StackPanel>
+                            <Button>Добавить</Button>
+                        </StackPanel>
+                    </ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+        </WrapPanel>
+        <FrameworkElement />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"></ColumnDefinition>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <DataGrid ItemsSource="{Binding CardOperations}" AutoGenerateColumns="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="№" Binding="{Binding Id}" Width="10"/>
+                    <DataGridTemplateColumn Header="Дата операции">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Date}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <DatePicker SelectedDate="{Binding Date}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Категория">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding OperationCategory.Name}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <ComboBox ItemsSource="{Binding OperationCategories}" SelectedValuePath="{Binding OperationCategory.Name}"  DisplayMemberPath="{Binding OperationCategory.Name}"  SelectedItem="{Binding OperationCategory}"></ComboBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Банк">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox ItemsSource="{Binding 
+                                            RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}},Path=DataContext.Banks }" 
+                                          DisplayMemberPath="Name" 
+                                          SelectedValuePath="Id"
+                                          SelectedValue="{Binding Bank.Id}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Счёт" Binding="{Binding CardNumber}"/>
+                    <DataGridTextColumn Header="Описание" Binding="{Binding Description}"/>
+                    <DataGridTextColumn Header="Сумма" Binding="{Binding Summ}"/>
+                    <DataGridTextColumn Header="Кэшбэк" Binding="{Binding CashBack}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <ListBox Grid.Column="1" ItemsSource="{Binding NewOperationCategories}">
+                
+            </ListBox>
+        </Grid>
+    </DockPanel>
+</Window>

@@ -8,11 +8,11 @@
         Title="Бюджет" Height="450" Width="800">
     <DockPanel>
         <Menu DockPanel.Dock="Top">
-            <MenuItem Header="Загрузить">
+            <MenuItem Header="Загрузить" Command="{Binding OnLoadCommand}">
             </MenuItem>
         </Menu>
-        <DataGrid>
+        <Frame Content="{Binding NavigationService.CurrentView}" NavigationUIVisibility="Hidden">
             
-        </DataGrid>
+        </Frame>
     </DockPanel>
 </Window>
