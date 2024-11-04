@@ -10,10 +10,11 @@ namespace BudgetApp.Infrastructure.Context
 {
     public class ApplicationContext : DbContext
     {
-        public DbSet<Bank> Banks { get; set; }
+        public DbSet<DataSource> Banks { get; set; }
         public DbSet<CardOperation> CardOperations { get; set; }
         public DbSet <OperationType> OperationTypes { get; set; }
         public DbSet<OperationCategory> OperationCategories { get; set; }
+        public DbSet<PoleAccordance> PoleAccordances { get; set; }
 
         public ApplicationContext(DbContextOptions<ApplicationContext> dbContextOptions)
         : base(dbContextOptions)
@@ -21,12 +22,12 @@ namespace BudgetApp.Infrastructure.Context
             Database.EnsureDeleted();
             Database.EnsureCreated();
 
-            Bank bank1 = new Bank()
+            DataSource bank1 = new DataSource()
             {
                 Id = 1,
                 Name = "Т-банк"
             };
-            Bank bank2 = new Bank()
+            DataSource bank2 = new DataSource()
             {
                 Id = 2,
                 Name = "Альфа банк"
@@ -44,6 +45,24 @@ namespace BudgetApp.Infrastructure.Context
                 Name = "Пополнение"
             };
             this.OperationTypes.AddRange(type1, type2);
+
+            List<PoleAccordance> poleAccordances = new List<PoleAccordance>();
+            PoleAccordance poleAccordance1 = new PoleAccordance();
+            poleAccordance1.MapPole("Date", "Дата операции");
+            PoleAccordance poleAccordance2 = new PoleAccordance();
+            poleAccordance2.MapPole("CardNumber", "Номер карты");
+            PoleAccordance poleAccordance3 = new PoleAccordance();
+            poleAccordance3.MapPole("Summ", "Сумма операции");
+            PoleAccordance poleAccordance4 = new PoleAccordance();
+            poleAccordance4.MapPole("CashBack", "Кэшбэк");
+            PoleAccordance poleAccordance5 = new PoleAccordance();
+            poleAccordance5.MapPole("OperationCategory", "Категория");
+            PoleAccordance poleAccordance6 = new PoleAccordance();
+            poleAccordance6.MapPole("Description", "Описание");
+
+            bank1.PoleAccordances = new List<PoleAccordance>();
+            bank1.PoleAccordances.AddRange([poleAccordance1, poleAccordance2, poleAccordance3, poleAccordance4, poleAccordance5, poleAccordance6]);
+
 
             this.SaveChanges();
             

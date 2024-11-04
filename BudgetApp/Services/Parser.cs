@@ -10,8 +10,30 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
+using NPOI.SS.Util;
+using NPOI.HSSF.Util;
+using System.IO;
+using Npoi.Mapper;
+using NPOI.OpenXml4Net.OPC;
+using NPOI.HSSF.UserModel;
+using MathNet.Numerics.Distributions;
+using System.Reflection;
+using System.ComponentModel;
+
+
 namespace BudgetApp.Services
 {
+
+    public class Student
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Sex { get; set; }
+        public DateTime BirthDay { get; set; }
+    }
+
     public class Parser
     {
 
@@ -24,81 +46,68 @@ namespace BudgetApp.Services
             _notifyService = notifyService;
         }
 
-        public ParserResultDTO Parse(string filePath, Bank bank)
+        public List<UploadDataDTO> Parse(string filePath, DataSource dataSource)
         {
-            Microsoft.Office.Interop.Excel.Application excel = new Microsoft.Office.Interop.Excel.Application();
-            Workbook workbook;
-            Worksheet worksheet;
-
-            workbook = excel.Workbooks.Open(filePath);
-            worksheet = workbook.Worksheets[1];
-
-            Dictionary<string, int> columnNames = new Dictionary<string,int>();
-
-            bool readRow = true;
-            int colIndex = 1;
-            int gap = 0;
-
-            while (readRow)
+            IWorkbook workbook;
+            using(FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite))
             {
-                Microsoft.Office.Interop.Excel.Range cell = worksheet.Cells[1, colIndex];
-                string value = Convert.ToString(cell.Value);
-                if (System.String.IsNullOrEmpty(value))
+                if (filePath.EndsWith(".xls"))
                 {
-                    gap += 1;
-                    if (gap > 4)
+                    workbook = new HSSFWorkbook(stream);
+                }
+                else
+                {
+                    workbook = new XSSFWorkbook(stream);
+                }
+            }
+
+
+            int test = workbook.NumberOfSheets;
+            // Получение листа
+            ISheet sheet = workbook.GetSheetAt(0);
+
+            Dictionary<int, PoleAccordance> coloumsIDs = new Dictionary<int, PoleAccordance>();
+            List<UploadDataDTO> data = new List<UploadDataDTO>();
+            for (int rowIndex = 0; rowIndex < sheet.LastRowNum; rowIndex++)
+            {
+                IRow row = sheet.GetRow(rowIndex);
+                if (rowIndex == 0)
+                {
+                    for (int cellIndex = 0; cellIndex < row.Cells.Count; cellIndex++)
                     {
-                        readRow = false;
+                        ICell cell = row.GetCell(cellIndex);
+                        PoleAccordance? poleAccordance = dataSource.PoleAccordances.FirstOrDefault(x => x.ExcelColumnName == cell.StringCellValue);
+                        if (poleAccordance != null)
+                        {
+                            coloumsIDs.Add(cellIndex, poleAccordance);
+                        }
+                        
                     }
                 }
                 else
                 {
-                    columnNames.Add(value,colIndex);
+                    UploadDataDTO uploadDataDTO = new UploadDataDTO();
+                    foreach (var key in coloumsIDs)
+                    {
+                        PropertyInfo? prop = uploadDataDTO.GetType().GetProperty(key.Value.PoleName, BindingFlags.Public | BindingFlags.Instance);
+                        if(prop != null)
+                        {
+                            ICell cell = row.GetCell(key.Key);
+                            if (cell == null)
+                                continue;
+                            string cellValue = cell.CellType == CellType.Numeric ? Convert.ToString(cell.NumericCellValue) : cell.StringCellValue;
+                            dynamic value = TypeDescriptor.GetConverter(prop.PropertyType).ConvertFromString(cellValue);
+                            prop.SetValue(uploadDataDTO, value);
+                        }
+                    }
+                    uploadDataDTO.DataSource = dataSource;
+                    data.Add(uploadDataDTO);
                 }
-                colIndex += 1;
+                
             }
 
-            List<OperationCategory> operationCategories = ParseCategories(columnNames["Категория"],worksheet);
+            return data;
 
-            readRow = true;
-            int rowIndex = 2;
-            List<CardOperation> operations = new List<CardOperation>();
-
-
-            while (readRow)
-            {
-                if (System.String.IsNullOrEmpty(worksheet.Cells[rowIndex, 1].Value))
-                {
-                    readRow = false;
-                    continue;
-                }
-                CardOperation cardOperation = new CardOperation()
-                {
-                    Bank = _repository.GetBank(1),
-                    CardNumber = worksheet.Cells[rowIndex, columnNames["Номер карты"]].Value,
-                    CashBack = Convert.ToDecimal(worksheet.Cells[rowIndex, columnNames["Кэшбэк"]].Value),
-                    Date = Convert.ToDateTime(worksheet.Cells[rowIndex, columnNames["Дата операции"]].Value),
-                    Description = worksheet.Cells[rowIndex, columnNames[columnNames.Keys.First(x=>x.Contains("Описание"))]].Value,
-                    Summ = Convert.ToDecimal(worksheet.Cells[rowIndex, columnNames["Сумма платежа"]].Value),
-                    OperationCategory = _repository.IsOperationCategoryExist(new OperationCategory { Name = worksheet.Cells[rowIndex, columnNames["Категория"]].Value }) 
-                                                            ? _repository.GetOperationCategoryByName(worksheet.Cells[rowIndex, columnNames["Категория"]].Value) 
-                                                            : new OperationCategory { Name = worksheet.Cells[rowIndex, columnNames["Категория"]].Value},
-                    OperationType = _repository.GetOperationTypeBySumm(Convert.ToDecimal(worksheet.Cells[rowIndex, columnNames["Сумма платежа"]].Value))
-                    
-                };
-                if(!_repository.IsCardOperationExist(cardOperation))
-                {
-                    operations.Add(cardOperation);
-                }
-                rowIndex++;
-            }
-
-
-            workbook.Close(0);
-            excel.Quit();
-            return new ParserResultDTO(operations, operationCategories);
-            //_repository.AddRangeCardOperation(operations);
-            //_notifyService.DataParsed();
         }
         
         public List<OperationCategory> ParseCategories(int categoryColIndex, Worksheet worksheet)

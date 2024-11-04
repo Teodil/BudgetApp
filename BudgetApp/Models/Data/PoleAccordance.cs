@@ -9,9 +9,16 @@ namespace BudgetApp.Models.Data
     public class PoleAccordance
     {
         public int Id { get; set; }
-        public BankPolesAccordance BankPolesAccordance { get; set; }
+        public DataSource DataSource { get; set; }
         public string PoleName { get; set; }
         public string ExcelColumnName { get; set; }
+
+
+        public void MapPole(string PoleName, string ExcelColumnName)
+        {
+            this.PoleName = PoleName;
+            this.ExcelColumnName = ExcelColumnName;
+        }
         /*
         public Bank bank { get; set; }
 

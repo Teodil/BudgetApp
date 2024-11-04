@@ -36,7 +36,7 @@ namespace BudgetApp.Infrastructure.Repository
 
         public bool IsCardOperationExist(CardOperation operation)
         {
-            return _applicationContext.CardOperations.Any(x=>x.Date == operation.Date && x.Bank == operation.Bank && x.Summ == operation.Summ);
+            return _applicationContext.CardOperations.Any(x=>x.Date == operation.Date && x.DataSource == operation.DataSource && x.Summ == operation.Summ);
         }
 
         public void AddCardOperation(CardOperation operation)
@@ -81,12 +81,12 @@ namespace BudgetApp.Infrastructure.Repository
         }
         #endregion
 
-        public Bank? GetBank(int id)
+        public DataSource? GetBank(int id)
         {
             return _applicationContext.Banks.FirstOrDefault(x => x.Id == id);
         }
 
-        public List<Bank> GetBanks()
+        public List<DataSource> GetBanks()
         {
             return _applicationContext.Banks.ToList();
         }

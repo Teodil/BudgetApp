@@ -9,40 +9,37 @@
         Title="Загрузка данных" Height="450" Width="800">
     <DockPanel>
         <WrapPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="10,10,0,10">
-            <TextBox Width="400" IsEnabled="False" Text="{Binding FilePath}"></TextBox>
-            <Button Margin="10,0,0,0" Command="{Binding OpenFileCommand}">Выбрать файл</Button>
+            <TextBox Height="20" MinWidth="200" MaxWidth="400" IsEnabled="False" Text="{Binding FilePath}"></TextBox>
+            <Button  Margin="10,0,30,0" Command="{Binding OpenFileCommand}">Выбрать файл</Button>
             <StackPanel>
                 <Label>
                     Шаблон загрузки Excel
                 </Label>
-                <ComboBox Margin="10,0,0,0" SelectedIndex="0">
-                    <ComboBoxItem>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock>Т-банк (Тинькофф)</TextBlock>
-                            <Button Margin="5,0,0,0">Редактирование</Button>
-                        </StackPanel>
-                    </ComboBoxItem>
-                    <ComboBoxItem>
-                        <StackPanel>
-                            <TextBlock>Альфа банк</TextBlock>
-                            <Button>Редактирование</Button>
-                        </StackPanel>
-                    </ComboBoxItem>
-                    <ComboBoxItem>
-                        <StackPanel>
-                            <Button>Добавить</Button>
-                        </StackPanel>
-                    </ComboBoxItem>
+                <ComboBox SelectedItem="{Binding CurrentDataSource}" ItemsSource="{Binding DataSources}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name}"/>
+                                <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}},Path=DataContext.EditBankMapCommand}" 
+                                        CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ComboBoxItem}},Path=DataContext}">Редактировать</Button>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
                 </ComboBox>
             </StackPanel>
+            <Button  Margin="10,0,0,0">Добавить</Button>
         </WrapPanel>
-        <FrameworkElement />
-        <Grid>
+        <WrapPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Margin="10,10,0,10">
+            <Button>Загрузить</Button>
+            <Button Margin="10,0,0,0">Очистить</Button>
+        </WrapPanel>
+        <Grid DockPanel.Dock="Left">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"></ColumnDefinition>
-                <ColumnDefinition Width="1*"></ColumnDefinition>
+                <ColumnDefinition Width="253*"></ColumnDefinition>
+                <ColumnDefinition Width="67*"/>
+                <ColumnDefinition Width="80*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <DataGrid ItemsSource="{Binding CardOperations}" AutoGenerateColumns="False">
+            <DataGrid ItemsSource="{Binding UploadData}" AutoGenerateColumns="False" Grid.ColumnSpan="2">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="№" Binding="{Binding Id}" Width="10"/>
                     <DataGridTemplateColumn Header="Дата операции">
@@ -60,12 +57,12 @@
                     <DataGridTemplateColumn Header="Категория">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding OperationCategory.Name}" />
+                                <TextBlock Text="{Binding OperationCategory}" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.CellEditingTemplate>
                             <DataTemplate>
-                                <ComboBox ItemsSource="{Binding OperationCategories}" SelectedValuePath="{Binding OperationCategory.Name}"  DisplayMemberPath="{Binding OperationCategory.Name}"  SelectedItem="{Binding OperationCategory}"></ComboBox>
+                                <ComboBox ItemsSource="{Binding OperationCategories}" SelectedValuePath="{Binding OperationCategory}"  DisplayMemberPath="{Binding OperationCategory}"  SelectedItem="{Binding OperationCategory}"></ComboBox>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
@@ -73,10 +70,10 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <ComboBox ItemsSource="{Binding 
-                                            RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}},Path=DataContext.Banks }" 
+                                            RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}},Path=DataContext.Banks}" 
                                           DisplayMemberPath="Name" 
                                           SelectedValuePath="Id"
-                                          SelectedValue="{Binding Bank.Id}"/>
+                                          SelectedItem="{Binding Bank}"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -86,8 +83,8 @@
                     <DataGridTextColumn Header="Кэшбэк" Binding="{Binding CashBack}"/>
                 </DataGrid.Columns>
             </DataGrid>
-            <ListBox Grid.Column="1" ItemsSource="{Binding NewOperationCategories}">
-                
+            <ListBox Grid.Column="2" ItemsSource="{Binding NewOperationCategories}">
+
             </ListBox>
         </Grid>
     </DockPanel>
