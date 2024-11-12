@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,34 +9,45 @@ namespace BudgetApp.Services
 {
     public class TransferObjectService
     {
-        private static TransferObjectService instance;
-        private static object syncRoot = new Object();
 
-        private object transferObject;
+        private Dictionary<Type,object> _transferObjectsList = new Dictionary<Type, object>();
 
-        private TransferObjectService()
-        { }
-
-        public static TransferObjectService getInstance()
+        public void SetTransferObject<T>(T value)
         {
-            if (instance == null)
+            if(_transferObjectsList.ContainsKey(typeof(T)))
             {
-                lock (syncRoot)
-                {
-                    instance = new TransferObjectService();
-                }
+                _transferObjectsList[typeof(T)] = value;
             }
-            return instance;
+            else
+            {
+                _transferObjectsList.Add(typeof(T), value);
+            }
         }
 
-        public void SetTransferObject(object transferObject)
+        public T? GetTransferObject<T>()
         {
-            this.transferObject = transferObject;
+            object? value; 
+            _transferObjectsList.TryGetValue(typeof(T),out value);
+            if(value != null)
+            {
+                T outValue = (T)_transferObjectsList[typeof(T)];
+                return (T)value;
+            }
+
+            return default;
         }
 
-        public object GetTransferObject()
+        public T? GetTransferObjectAndDelete<T>()
         {
-            return this.transferObject;
+            T? outObject = GetTransferObject<T>();
+            if (outObject != null)
+                Delete<T>();
+            return outObject;
+        }
+
+        public void Delete<T>()
+        {
+            _transferObjectsList.Remove(typeof(T));
         }
 
     }

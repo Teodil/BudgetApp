@@ -12,9 +12,12 @@ namespace BudgetApp.Models.Utilitis
 
         public bool IsEditable { get; set; }
 
-        public PoleDescriptionAttribute(string name,bool isEditable = true)
+        public bool IsRequired { get; set; }
+
+        public PoleDescriptionAttribute(string name, bool isRequired = true, bool isEditable = true)
         {
             Name = name;
+            IsRequired = isRequired;
             IsEditable = isEditable;
         }
     }

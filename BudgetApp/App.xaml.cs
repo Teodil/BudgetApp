@@ -41,12 +41,13 @@ namespace BudgetApp
        
             }
 
-            services.AddSingleton<NotifyService>();
+            services.AddSingleton<EventTransferService>();
+            services.AddSingleton<TransferObjectService>();
 
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<LoadDataWindowViewModel>();
-
-            services.AddSingleton<DataListViewModel>();
+            services.AddTransient<DataListViewModel>();
+            services.AddTransient<DataSourceConrolWindowViewModel>();
 
             services.AddSingleton<MainWindow>(provider => new MainWindow()
             {
@@ -55,6 +56,10 @@ namespace BudgetApp
             services.AddTransient<LoadDataWindow>(provider => new LoadDataWindow()
             {
                 DataContext = provider.GetRequiredService<LoadDataWindowViewModel>()
+            });
+            services.AddTransient<DataSourceConrolWindow>(provider => new DataSourceConrolWindow()
+            {
+                DataContext = provider.GetRequiredService<DataSourceConrolWindowViewModel>()
             });
 
             services.AddDbContext<ApplicationContext>(opt =>
@@ -73,8 +78,16 @@ namespace BudgetApp
         {
             var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
             mainWindow.Show();
+            mainWindow.Closed += CloseApp;
             base.OnStartup(e);
         }
+
+        private void CloseApp(object? sender, EventArgs e)
+        {
+            if (sender != this)
+                this.Shutdown();
+        }
+
     }
 
 }

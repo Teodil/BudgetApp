@@ -27,5 +27,7 @@ namespace BudgetApp.Models.DTO
         public decimal CashBack { get; set; }
 
         public DataSource DataSource { get; set; }
+        
+        public bool IsDuplicate { get; set; }
     }
 }

@@ -11,13 +11,15 @@ namespace BudgetApp.Models.Data
         public int Id { get; set; }
         public DataSource DataSource { get; set; }
         public string PoleName { get; set; }
+        public string PoleTitle { get; set; }
         public string ExcelColumnName { get; set; }
 
 
-        public void MapPole(string PoleName, string ExcelColumnName)
+        public void MapPole(string poleName, string poleTitle, string excelColumnName)
         {
-            this.PoleName = PoleName;
-            this.ExcelColumnName = ExcelColumnName;
+            PoleName = poleName;
+            PoleTitle = poleTitle;
+            ExcelColumnName = excelColumnName;
         }
         /*
         public Bank bank { get; set; }

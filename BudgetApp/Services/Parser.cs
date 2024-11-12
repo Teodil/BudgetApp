@@ -38,9 +38,9 @@ namespace BudgetApp.Services
     {
 
         private Repository _repository;
-        private NotifyService _notifyService;
+        private EventTransferService _notifyService;
 
-        public Parser(Repository repository, NotifyService notifyService)
+        public Parser(Repository repository, EventTransferService notifyService)
         {
             _repository = repository;
             _notifyService = notifyService;
@@ -87,6 +87,7 @@ namespace BudgetApp.Services
                 else
                 {
                     UploadDataDTO uploadDataDTO = new UploadDataDTO();
+                    uploadDataDTO.IsDuplicate = false;
                     foreach (var key in coloumsIDs)
                     {
                         PropertyInfo? prop = uploadDataDTO.GetType().GetProperty(key.Value.PoleName, BindingFlags.Public | BindingFlags.Instance);
@@ -101,6 +102,8 @@ namespace BudgetApp.Services
                         }
                     }
                     uploadDataDTO.DataSource = dataSource;
+                    if(_repository.IsCardOperationExist(uploadDataDTO))
+                        uploadDataDTO.IsDuplicate = true;
                     data.Add(uploadDataDTO);
                 }
                 

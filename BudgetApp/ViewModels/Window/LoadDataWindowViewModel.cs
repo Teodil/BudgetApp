@@ -4,6 +4,7 @@ using BudgetApp.Models.Data;
 using BudgetApp.Models.DTO;
 using BudgetApp.Services;
 using BudgetApp.ViewModels.Base;
+using BudgetApp.Views.Windows;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -18,8 +19,11 @@ namespace BudgetApp.ViewModels.Window
 {
     public class LoadDataWindowViewModel : ViewModelBase
     {
-        private Parser _parser;
-        private Repository _repository;
+        private readonly Parser _parser;
+        private readonly Repository _repository;
+        private readonly INavigationService _navigationService;
+        private readonly TransferObjectService _transferObjectService;
+        private readonly EventTransferService _eventTransferService;
 
         private string _filePath;
         public string FilePath
@@ -35,15 +39,15 @@ namespace BudgetApp.ViewModels.Window
             set=> Set(ref _cardOperations, value);
         }
 
-        private List<OperationCategory> _newOperationCategories;
-        public List<OperationCategory> NewOperationCategories
+        private ObservableCollection<OperationCategory> _newOperationCategories = new ObservableCollection<OperationCategory>();
+        public ObservableCollection<OperationCategory> NewOperationCategories
         {
             get=>_newOperationCategories;
             set=>Set(ref _newOperationCategories, value);
         }
 
-        private List<OperationCategory> _operationCategories;
-        public List<OperationCategory> OperationCategories
+        private ObservableCollection<OperationCategory> _operationCategories;
+        public ObservableCollection<OperationCategory> OperationCategories
         {
             get=> _operationCategories;
             set => Set(ref _operationCategories, value);
@@ -71,15 +75,37 @@ namespace BudgetApp.ViewModels.Window
             set => Set(ref _currentDataSource, value);
         }
 
-        public LoadDataWindowViewModel(Parser parser, Repository repository)
+        private bool _isLoadDuplicate = false;
+        public bool IsLoadDuplicate
+        {
+            get=>_isLoadDuplicate;
+            set=> Set(ref _isLoadDuplicate, value);
+        }
+
+        public LoadDataWindowViewModel(Parser parser, Repository repository, 
+                                       INavigationService navigationService, 
+                                       TransferObjectService transferObjectService,
+                                       EventTransferService eventTransferService)
         {
             _parser = parser;
             _repository = repository;
-            OperationCategories = repository.GetOperationCategories();
-            DataSources = repository.GetBanks();
+            LoadData();
             FilePath = "";
             OpenFileCommand = new RelayCommand(OnOpenFileCommand);
-            EditBankMapCommand = new RelayCommand(OnEditBankMapCommand);
+            LoadCommand = new RelayCommand(OnLoadCommand, CanLoadCommand);
+            ClearCommand = new RelayCommand(OnClearCommand, CanClearCommand);
+            EditDataSourceCommand = new RelayCommand(OnEditDataSourceCommand, CanEditDataSourceCommand);
+            AddDataSourceCommand = new RelayCommand(OnAddDataSourceCommand);
+            _navigationService = navigationService;
+            _transferObjectService = transferObjectService;
+            _eventTransferService = eventTransferService;
+            eventTransferService.DataBaseDataUpdatedEvent += LoadData;
+        }
+
+        private void LoadData()
+        {
+            OperationCategories = new ObservableCollection<OperationCategory>(_repository.GetOperationCategories());
+            DataSources = _repository.GetDataSources();
         }
 
         #region Commands
@@ -101,20 +127,84 @@ namespace BudgetApp.ViewModels.Window
                 FilePath = openFileDialog.FileName;
                 List<UploadDataDTO> parserResult = _parser.Parse(openFileDialog.FileName, CurrentDataSource);
                 UploadData = new ObservableCollection<UploadDataDTO>(parserResult);
-                //CardOperations = parserResult.newCardOperations;
-                //NewOperationCategories = parserResult.newOperationCategories;
+                foreach (var item in UploadData)
+                {
+                    OperationCategory operationCategory = new OperationCategory { Name = item.OperationCategory };
+                    if (NewOperationCategories.FirstOrDefault(x => x.Name == item.OperationCategory) == null && _repository.IsOperationCategoryExist(operationCategory) == false)
+                    {
+                        NewOperationCategories.Add(operationCategory);
+                    }
+                }
+
+
             }
         }
 
-        public ICommand EditBankMapCommand
+        public ICommand EditDataSourceCommand { get; set; }
+        private void OnEditDataSourceCommand(object param)
         {
-            get;
-            set;
+            _transferObjectService.SetTransferObject(CurrentDataSource);
+            _navigationService.GetWindow<DataSourceConrolWindow>().Show();
         }
 
-        private void OnEditBankMapCommand(object param)
+        private bool CanEditDataSourceCommand(object param)
         {
-            Console.WriteLine(param);
+            if(CurrentDataSource != null) return true;
+
+            return false;
+        }
+
+        public ICommand AddDataSourceCommand { get; set; }
+        private void OnAddDataSourceCommand(object param)
+        {
+            _navigationService.GetWindow<DataSourceConrolWindow>().Show();
+        }
+
+        public ICommand LoadCommand { get; set; }
+        private void OnLoadCommand(object param)
+        {
+            List<UploadDataDTO> dataToUpload = UploadData.ToList();
+            if(IsLoadDuplicate == false)
+                dataToUpload = UploadData.Where(x=>x.IsDuplicate == false).ToList();
+
+            foreach (var item in dataToUpload)
+            {
+                OperationCategory operationCategory = new OperationCategory { Name = item.OperationCategory };
+
+                operationCategory = NewOperationCategories.FirstOrDefault(x => x.Name == item.OperationCategory) ?? _repository.GetOperationCategoryByName(item.OperationCategory);
+
+                CardOperation cardOperation = new CardOperation(item);
+                cardOperation.OperationCategory = operationCategory;
+                
+                _repository.AddCardOperation(cardOperation);
+            }
+
+            UploadData = null;
+            NewOperationCategories.Clear();
+            LoadData();
+            MessageBox.Show("Данные загружены и сохранены");
+        }
+
+        private bool CanLoadCommand(object param)
+        {
+            if (UploadData == null  || UploadData.Count == 0) return false;
+
+            return true;
+        }
+
+        public ICommand ClearCommand { get; set; }
+        private void OnClearCommand(object param)
+        {
+            UploadData = null;
+            NewOperationCategories.Clear();
+            MessageBox.Show("Данные удалены");
+        }
+
+        private bool CanClearCommand(object param)
+        {
+            if (UploadData == null)
+                return false;
+            return true;
         }
 
         #endregion

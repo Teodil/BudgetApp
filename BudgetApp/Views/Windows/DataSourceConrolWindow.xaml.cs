@@ -10,17 +10,16 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace BudgetApp.Views.Pages
+namespace BudgetApp.Views.Windows
 {
     /// <summary>
-    /// Логика взаимодействия для ExcelTemplateEdit.xaml
+    /// Логика взаимодействия для DataSourceConrolWindow.xaml
     /// </summary>
-    public partial class ExcelTemplateEdit : Page
+    public partial class DataSourceConrolWindow : Window
     {
-        public ExcelTemplateEdit()
+        public DataSourceConrolWindow()
         {
             InitializeComponent();
         }

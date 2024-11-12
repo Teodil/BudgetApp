@@ -21,14 +21,14 @@ namespace BudgetApp.ViewModels.Page
             set { Set(ref cardOperations, value); }
         }
 
-        private NotifyService _notifyService;
+        private EventTransferService _eventTransferService;
         private Repository _repository;
 
-        public DataListViewModel(NotifyService notifyService, Repository repository)
+        public DataListViewModel(EventTransferService eventTransferService, Repository repository)
         {
-            _notifyService = notifyService;
+            _eventTransferService = eventTransferService;
             _repository = repository;
-            _notifyService.DataParsedEvent += RefreshData;
+            _eventTransferService.DataBaseDataUpdatedEvent += RefreshData;
         }
 
         private void RefreshData()

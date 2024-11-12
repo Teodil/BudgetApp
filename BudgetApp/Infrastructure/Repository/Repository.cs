@@ -1,5 +1,7 @@
 ﻿using BudgetApp.Infrastructure.Context;
 using BudgetApp.Models.Data;
+using BudgetApp.Models.DTO;
+using BudgetApp.Services;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -12,10 +14,12 @@ namespace BudgetApp.Infrastructure.Repository
     public class Repository
     {
         private ApplicationContext _applicationContext;
+        private EventTransferService _notifyService;
 
-        public Repository(ApplicationContext applicationContext)
+        public Repository(ApplicationContext applicationContext, EventTransferService notifyService)
         {
             _applicationContext = applicationContext;
+            _notifyService = notifyService;
         }
 
         #region CardOperation
@@ -39,16 +43,25 @@ namespace BudgetApp.Infrastructure.Repository
             return _applicationContext.CardOperations.Any(x=>x.Date == operation.Date && x.DataSource == operation.DataSource && x.Summ == operation.Summ);
         }
 
+        public bool IsCardOperationExist(UploadDataDTO uploadDataDTO)
+        {
+            return _applicationContext.CardOperations.Any(x => x.Date == uploadDataDTO.Date 
+                                                          && x.DataSource == uploadDataDTO.DataSource 
+                                                          && x.Summ == uploadDataDTO.Summ);
+        }
+
         public void AddCardOperation(CardOperation operation)
         {
             _applicationContext.CardOperations.Add(operation);
             _applicationContext.SaveChanges();
+            _notifyService.DataBaseDataUpdated();
         }
 
         public void AddRangeCardOperation(IEnumerable<CardOperation> operations)
         {
             _applicationContext.CardOperations.AddRange(operations);
             _applicationContext.SaveChanges();
+            _notifyService.DataBaseDataUpdated();
         }
         #endregion
 
@@ -62,12 +75,14 @@ namespace BudgetApp.Infrastructure.Repository
         {
             _applicationContext.OperationCategories.Add(category);
             _applicationContext.SaveChanges();
+            _notifyService.DataBaseDataUpdated();
         }
 
         public void AddRangeOperationCategory(IEnumerable<OperationCategory> categories)
         {
             _applicationContext.OperationCategories.AddRange(categories);
             _applicationContext.SaveChanges();
+            _notifyService.DataBaseDataUpdated();
         }
 
         public OperationCategory? GetOperationCategoryByName(string name)
@@ -81,15 +96,31 @@ namespace BudgetApp.Infrastructure.Repository
         }
         #endregion
 
-        public DataSource? GetBank(int id)
+        #region DataSource
+        public DataSource? GetDataSource(int id)
         {
-            return _applicationContext.Banks.FirstOrDefault(x => x.Id == id);
+            return _applicationContext.DataSources.FirstOrDefault(x => x.Id == id);
         }
 
-        public List<DataSource> GetBanks()
+        public List<DataSource> GetDataSources()
         {
-            return _applicationContext.Banks.ToList();
+            return _applicationContext.DataSources.ToList();
         }
+
+        public void AddDataDataSources(DataSource dataSource)
+        {
+            _applicationContext.DataSources.Add(dataSource);
+            _applicationContext.SaveChanges();
+            _notifyService.DataBaseDataUpdated();
+        }
+
+        public void UpdateDataDataSources(DataSource dataSource)
+        {
+            _applicationContext.DataSources.Update(dataSource);
+            _applicationContext.SaveChanges();
+            _notifyService.DataBaseDataUpdated();
+        }
+        #endregion
 
         public OperationType GetOperationTypeBySumm(decimal summ)
         {

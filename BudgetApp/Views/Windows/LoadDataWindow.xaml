@@ -8,38 +8,56 @@
         mc:Ignorable="d"
         Title="Загрузка данных" Height="450" Width="800">
     <DockPanel>
-        <WrapPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="10,10,0,10">
-            <TextBox Height="20" MinWidth="200" MaxWidth="400" IsEnabled="False" Text="{Binding FilePath}"></TextBox>
-            <Button  Margin="10,0,30,0" Command="{Binding OpenFileCommand}">Выбрать файл</Button>
-            <StackPanel>
-                <Label>
-                    Шаблон загрузки Excel
-                </Label>
-                <ComboBox SelectedItem="{Binding CurrentDataSource}" ItemsSource="{Binding DataSources}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel>
-                                <TextBlock Text="{Binding Name}"/>
-                                <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}},Path=DataContext.EditBankMapCommand}" 
-                                        CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ComboBoxItem}},Path=DataContext}">Редактировать</Button>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </StackPanel>
-            <Button  Margin="10,0,0,0">Добавить</Button>
-        </WrapPanel>
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="10,10,0,10">
+            <TextBox Height="25" Width="200" IsEnabled="False" Text="{Binding FilePath}" VerticalAlignment="Bottom"></TextBox>
+            <Button  Margin="10,0,10,0" Command="{Binding OpenFileCommand}" VerticalAlignment="Bottom">Выбрать файл</Button>
+            <Border BorderThickness="1,1,1,1" BorderBrush="#FF673AB7" CornerRadius="2,2,0,0" Cursor="" HorizontalAlignment="Right">
+                <Grid Width="400">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Grid.ColumnSpan="3" HorizontalAlignment="Center">
+                        Шаблон загрузки Excel
+                    </Label>
+                    <ComboBox Margin="2,0,0,0" Grid.Row="1" Grid.Column="0" SelectedItem="{Binding CurrentDataSource}" ItemsSource="{Binding DataSources}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Command="{Binding AddDataSourceCommand}" Grid.Column="1" Grid.Row="1"  Margin="10,0,10,0" Cursor="Hand">Добавить</Button>
+                    <Button Command="{Binding EditDataSourceCommand}" Grid.Column="2" Margin="0,0,2,0" Grid.Row="1" Cursor="Hand">Редактировать</Button>
+                </Grid>
+            </Border>
+        </StackPanel>
         <WrapPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Margin="10,10,0,10">
-            <Button>Загрузить</Button>
-            <Button Margin="10,0,0,0">Очистить</Button>
+            <Button Command="{Binding LoadCommand}">Загрузить</Button>
+            <Button Command="{Binding ClearCommand}" Margin="10,0,0,0" Cursor="Hand">Очистить</Button>
+            <CheckBox IsChecked="{Binding IsLoadDuplicate}" Content="Загружать дубли" Margin="10,0,0,0"/>
         </WrapPanel>
         <Grid DockPanel.Dock="Left">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="253*"></ColumnDefinition>
-                <ColumnDefinition Width="67*"/>
-                <ColumnDefinition Width="80*"></ColumnDefinition>
+                <ColumnDefinition Width="3*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <DataGrid ItemsSource="{Binding UploadData}" AutoGenerateColumns="False" Grid.ColumnSpan="2">
+            <DataGrid ItemsSource="{Binding UploadData}" AutoGenerateColumns="False" >
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsDuplicate}" Value="true">
+                                <Setter Property="Background" Value="#FFD9E421"></Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="№" Binding="{Binding Id}" Width="10"/>
                     <DataGridTemplateColumn Header="Дата операции">
@@ -66,14 +84,13 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Банк">
+                    <DataGridTemplateColumn Header="Источник">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <ComboBox ItemsSource="{Binding 
-                                            RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}},Path=DataContext.Banks}" 
+                                <ComboBox ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}},Path=DataContext.DataSources}" 
                                           DisplayMemberPath="Name" 
                                           SelectedValuePath="Id"
-                                          SelectedItem="{Binding Bank}"/>
+                                          SelectedItem="{Binding DataSource}"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -83,9 +100,6 @@
                     <DataGridTextColumn Header="Кэшбэк" Binding="{Binding CashBack}"/>
                 </DataGrid.Columns>
             </DataGrid>
-            <ListBox Grid.Column="2" ItemsSource="{Binding NewOperationCategories}">
-
-            </ListBox>
         </Grid>
     </DockPanel>
 </Window>
