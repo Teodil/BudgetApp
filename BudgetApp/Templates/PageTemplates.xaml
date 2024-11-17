@@ -6,4 +6,7 @@
     <DataTemplate DataType="{x:Type vm:DataListViewModel}">
         <pages:DataList/>
     </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:AnaliticPageViewModel}">
+        <pages:AnaliticPage/>
+    </DataTemplate>
 </ResourceDictionary>

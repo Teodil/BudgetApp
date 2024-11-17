@@ -6,6 +6,7 @@ using BudgetApp.Services;
 using BudgetApp.ViewModels.Base;
 using BudgetApp.ViewModels.Page;
 using BudgetApp.ViewModels.Window;
+using BudgetApp.Views.Pages;
 using BudgetApp.Views.Windows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,6 +47,7 @@ namespace BudgetApp
 
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<LoadDataWindowViewModel>();
+            services.AddTransient<AnaliticPageViewModel>();
             services.AddTransient<DataListViewModel>();
             services.AddTransient<DataSourceConrolWindowViewModel>();
 
@@ -60,6 +62,10 @@ namespace BudgetApp
             services.AddTransient<DataSourceConrolWindow>(provider => new DataSourceConrolWindow()
             {
                 DataContext = provider.GetRequiredService<DataSourceConrolWindowViewModel>()
+            });
+            services.AddTransient<AnaliticPage>(provider => new AnaliticPage()
+            {
+                DataContext = provider.GetRequiredService<AnaliticPageViewModel>()
             });
 
             services.AddDbContext<ApplicationContext>(opt =>

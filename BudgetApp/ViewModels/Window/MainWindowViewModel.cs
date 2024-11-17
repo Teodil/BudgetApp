@@ -2,6 +2,7 @@
 using BudgetApp.Services;
 using BudgetApp.ViewModels.Base;
 using BudgetApp.ViewModels.Page;
+using BudgetApp.Views.Pages;
 using BudgetApp.Views.Windows;
 using Microsoft.Win32;
 using System;
@@ -32,6 +33,7 @@ namespace BudgetApp.ViewModels.Window
             _parser = parser;
             _loadDataWindow = loadDataWindow;
             OnLoadCommand = new RelayCommand(Load);
+            AnaliticCommand = new RelayCommand(OnAnaliticCommand);
         }
 
 
@@ -43,6 +45,14 @@ namespace BudgetApp.ViewModels.Window
 
         }
 
-        
+        public ICommand AnaliticCommand { get; set; }
+
+        private void OnAnaliticCommand(object param)
+        {
+            _navigationService.NavigateTo<AnaliticPageViewModel>();
+
+        }
+
+
     }
 }

@@ -21,7 +21,6 @@ namespace BudgetApp.Infrastructure.Context
         {
             Database.EnsureDeleted();
             Database.EnsureCreated();
-
             DataSource bank1 = new DataSource()
             {
                 Id = 1,

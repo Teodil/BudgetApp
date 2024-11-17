@@ -27,9 +27,9 @@ namespace BudgetApp.Infrastructure.Repository
         {
             var query = _applicationContext.CardOperations.AsQueryable();
             if (from != null)
-                query = query.Where(x => x.Date >= from);
+                query = query.Where(x => x.Date.Date >= from.Value.Date);
             if (to != null)
-                query = query.Where(x => x.Date <= to);
+                query = query.Where(x => x.Date.Date <= to.Value.Date);
             if (operationCategory != null)
                 query = query.Where(x => x.OperationCategory == operationCategory);
             if (operationType != null)
